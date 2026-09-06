@@ -18,35 +18,37 @@ import { INITIAL_WORKFLOW_STEPS } from './services/workflowEngine';
 import { CANONICAL_ACCEPTANCE_INPUT, DEMO_PRESETS } from './data/evaluationFixtures';
 
 import { Header } from './components/common/Header';
+import type { NavigationTab } from './components/common/Header';
 import { VoiceCore } from './components/voice/VoiceCore';
 import type { PauseDialogState } from './components/voice/SpeakingPauseDialog';
 import { LiveTranscript } from './components/transcript/LiveTranscript';
 import { SemanticStatePanel } from './components/semantic/SemanticStatePanel';
 import { WorkflowPipeline } from './components/workflow/WorkflowPipeline';
 import { RimeObservabilityPanel } from './components/rime/RimeObservabilityPanel';
-import { DemoScenarioBar } from './components/demo/DemoScenarioBar';
 import { EvaluationLab } from './components/evaluation/EvaluationLab';
 import { ArchitectureView } from './components/architecture/ArchitectureView';
 import { PrivacyView } from './components/common/PrivacyView';
 import { TextInputFallback } from './components/voice/TextInputFallback';
-import { SessionStatsBar } from './components/common/SessionStatsBar';
 import { EntityCorrectionModal } from './components/common/EntityCorrectionModal';
 import { KeyboardShortcutsLegend } from './components/common/KeyboardShortcutsLegend';
 import { useKeyboardShortcuts } from './components/voice/useKeyboardShortcuts';
 import { useToast } from './components/common/ToastProvider';
-import { SpeakerProfileBar } from './components/history/SpeakerProfileBar';
 import { ConversationHistoryModal } from './components/history/ConversationHistoryModal';
+import { OverviewView } from './components/landing/OverviewView';
+import { UnderstandingView } from './components/semantic/UnderstandingView';
+import { WorkflowView } from './components/workflow/WorkflowView';
+import { GuidedDemoView } from './components/demo/GuidedDemoView';
+import { VoiceEngineView } from './components/rime/VoiceEngineView';
 import {
   getCurrentSpeaker,
-  setCurrentSpeaker,
   getAllSessions,
   appendTurnsToSession,
-  type ConversationSession,
 } from './services/historyStorage';
 
 export const App: React.FC = () => {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'workspace' | 'evaluation' | 'architecture' | 'privacy'>('workspace');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('workspace');
+  const [workspaceInspectorTab, setWorkspaceInspectorTab] = useState<'semantic' | 'workflow' | 'rime'>('semantic');
 
   // Voice & Audio States
   const [voiceState, setVoiceState] = useState<VoiceState>('connected');
@@ -142,7 +144,7 @@ export const App: React.FC = () => {
   }>({ isOpen: false, entityId: '', entityLabel: '', currentValue: '' });
 
   // Speaker & Conversation History Tracking
-  const [currentSpeaker, setSpeakerState] = useState(() => getCurrentSpeaker());
+  const [currentSpeaker] = useState(() => getCurrentSpeaker());
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [sessionCount, setSessionCount] = useState(() => getAllSessions().length);
   const currentSessionIdRef = useRef<string>(`ses_${Date.now().toString().slice(-6)}`);
@@ -627,6 +629,9 @@ export const App: React.FC = () => {
         onSelectTab={setActiveTab}
         voiceState={voiceState}
         isRimeActive={voiceState === 'speaking'}
+        currentSpeakerName={currentSpeaker.name}
+        onOpenHistory={() => setIsHistoryOpen(true)}
+        sessionCount={sessionCount}
       />
 
       {/* Entity Correction Modal — replaces window.prompt() */}
@@ -653,38 +658,72 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main style={{ flex: 1, padding: '20px 24px', maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+        {/* 0. PRODUCT OVERVIEW / HERO LANDING */}
+        {activeTab === 'overview' && (
+          <OverviewView
+            onNavigate={(tab) => setActiveTab(tab)}
+            onLaunchCanonicalDemo={() => handleSelectPreset(DEMO_PRESETS[0])}
+          />
+        )}
+
         {/* 1. VOICE WORKSPACE (PRIMARY APPLICATION EXPERIENCE) */}
         {activeTab === 'workspace' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Live Session Stats */}
-            <SessionStatsBar
-              turns={turns}
-              ttfaMs={measuredTtfa}
-              sessionStartMs={sessionStartTimeRef.current}
-            />
-
-            {/* Active Speaker Profile & Conversation History Bar */}
-            <SpeakerProfileBar
-              currentSpeaker={currentSpeaker}
-              onSelectSpeaker={(newSpk) => {
-                setSpeakerState(newSpk);
-                setCurrentSpeaker(newSpk);
-                // Start a fresh session ID for the new speaker
-                currentSessionIdRef.current = `ses_${Date.now().toString().slice(-6)}`;
-                toast.info('Speaker Selected', `Active speaker switched to ${newSpk.name}`);
+            {/* Quick Scenario Runner Bar for rapid hackathon testing */}
+            <div
+              className="card"
+              style={{
+                padding: '10px 16px',
+                backgroundColor: 'var(--bg-surface-subtle)',
+                border: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '10px',
               }}
-              onOpenHistory={() => setIsHistoryOpen(true)}
-              sessionCount={sessionCount}
-            />
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  QUICK RUNNER:
+                </span>
+                {DEMO_PRESETS.slice(0, 4).map((preset) => {
+                  const isSelected = activePresetId === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => handleSelectPreset(preset)}
+                      disabled={isScenarioRunning}
+                      className={`pill-chip ${isSelected ? 'active' : ''}`}
+                      style={{ fontSize: '0.74rem' }}
+                    >
+                      <span>{preset.title.split('.')[1] || preset.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* Hackathon Demo Presets Controller */}
-            <DemoScenarioBar
-              activePresetId={activePresetId}
-              onSelectPreset={handleSelectPreset}
-              isRunning={isScenarioRunning}
-            />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  onClick={() => setActiveTab('demo')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#818CF8',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>Guided Judge Tour (60s) →</span>
+                </button>
+              </div>
+            </div>
 
-            {/* Core Workspace Grid */}
+            {/* Core Workspace Grid: Voice Core & Live Transcript */}
             <div
               className="workspace-grid"
               style={{
@@ -694,7 +733,7 @@ export const App: React.FC = () => {
                 alignItems: 'stretch',
               }}
             >
-              {/* Left Column: Voice Core + Text Input + Rime Observability */}
+              {/* Left Column: Voice Core + Text Fallback */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <VoiceCore
                   voiceState={voiceState}
@@ -711,16 +750,11 @@ export const App: React.FC = () => {
                   onPauseDiscard={handlePauseDiscard}
                 />
 
-                {/* Text Input Fallback — always visible */}
+                {/* Text Input Fallback */}
                 <TextInputFallback
                   onSubmit={handleTextSubmit}
                   isDisabled={isScenarioRunning}
                   placeholder="Type in Hindi, English, or Hinglish — e.g. 'Mera complaint 4812 check karo'"
-                />
-
-                <RimeObservabilityPanel
-                  config={rimeConfig}
-                  ttfaMs={measuredTtfa}
                 />
               </div>
 
@@ -730,27 +764,133 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Semantic State & Workflow Pipeline Cards */}
+            {/* Bottom Inspection Center (Progressive Disclosure) */}
             <div
-              className="bottom-grid"
+              className="card"
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-                gap: '16px',
+                padding: '16px 18px',
+                backgroundColor: 'var(--bg-surface-subtle)',
+                border: '1px solid var(--border-subtle)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
               }}
             >
-              <SemanticStatePanel
-                state={semanticState}
-                onConfirmEntity={handleConfirmEntity}
-                onCorrectEntity={handleCorrectEntity}
-              />
+              {/* Tab Selector & Deep Link */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  paddingBottom: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    INSPECTION CENTER:
+                  </span>
 
-              <WorkflowPipeline steps={workflowSteps} />
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      onClick={() => setWorkspaceInspectorTab('semantic')}
+                      className={`pill-chip ${workspaceInspectorTab === 'semantic' ? 'active' : ''}`}
+                    >
+                      Semantic Invariants
+                    </button>
+                    <button
+                      onClick={() => setWorkspaceInspectorTab('workflow')}
+                      className={`pill-chip ${workspaceInspectorTab === 'workflow' ? 'active' : ''}`}
+                    >
+                      Workflow Pipeline
+                    </button>
+                    <button
+                      onClick={() => setWorkspaceInspectorTab('rime')}
+                      className={`pill-chip ${workspaceInspectorTab === 'rime' ? 'active' : ''}`}
+                    >
+                      Rime Engine Telemetry
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (workspaceInspectorTab === 'semantic') setActiveTab('understanding');
+                    else if (workspaceInspectorTab === 'workflow') setActiveTab('workflow');
+                    else if (workspaceInspectorTab === 'rime') setActiveTab('rime');
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#38BDF8',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Open Full Dedicated View →
+                </button>
+              </div>
+
+              {/* Inspector Content: rendered cleanly via progressive disclosure */}
+              <div>
+                <div style={{ display: workspaceInspectorTab === 'semantic' ? 'block' : 'none' }}>
+                  <SemanticStatePanel
+                    state={semanticState}
+                    onConfirmEntity={handleConfirmEntity}
+                    onCorrectEntity={handleCorrectEntity}
+                  />
+                </div>
+
+                <div style={{ display: workspaceInspectorTab === 'workflow' ? 'block' : 'none' }}>
+                  <WorkflowPipeline steps={workflowSteps} />
+                </div>
+
+                <div style={{ display: workspaceInspectorTab === 'rime' ? 'block' : 'none' }}>
+                  <RimeObservabilityPanel
+                    config={rimeConfig}
+                    ttfaMs={measuredTtfa}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* 2. EVALUATION LAB & BASELINES */}
+        {/* 2. DEDICATED UNDERSTANDING VIEW */}
+        {activeTab === 'understanding' && (
+          <UnderstandingView
+            state={semanticState}
+            onConfirmEntity={handleConfirmEntity}
+            onCorrectEntity={handleCorrectEntity}
+            onNavigateToWorkspace={() => setActiveTab('workspace')}
+          />
+        )}
+
+        {/* 3. DEDICATED WORKFLOW VIEW */}
+        {activeTab === 'workflow' && (
+          <WorkflowView
+            steps={workflowSteps}
+            onNavigateToWorkspace={() => setActiveTab('workspace')}
+          />
+        )}
+
+        {/* 4. DEDICATED GUIDED DEMO TOUR */}
+        {activeTab === 'demo' && (
+          <GuidedDemoView
+            activePresetId={activePresetId}
+            onSelectAndRunPreset={(preset) => {
+              handleSelectPreset(preset);
+              toast.info('Demo Triggered', `Executing ${preset.title} in workspace`);
+            }}
+            isRunning={isScenarioRunning}
+            onNavigateToWorkspace={() => setActiveTab('workspace')}
+          />
+        )}
+
+        {/* 5. EVALUATION LAB & BASELINES */}
         {activeTab === 'evaluation' && (
           <EvaluationLab
             sessionTraces={sessionTraces}
@@ -768,10 +908,20 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* 3. ARCHITECTURE VIEW */}
+        {/* 6. DEDICATED RIME / VOICE ENGINE VIEW */}
+        {activeTab === 'rime' && (
+          <VoiceEngineView
+            config={rimeConfig}
+            ttfaMs={measuredTtfa}
+            onNavigateToWorkspace={() => setActiveTab('workspace')}
+            onTestRimeSample={() => rimeClient.streamSpeech("Samajh gaya. Let me check complaint 4812.", "mirror_mix")}
+          />
+        )}
+
+        {/* 7. ARCHITECTURE VIEW */}
         {activeTab === 'architecture' && <ArchitectureView />}
 
-        {/* 4. PRIVACY & GOVERNANCE */}
+        {/* 8. PRIVACY & GOVERNANCE */}
         {activeTab === 'privacy' && <PrivacyView />}
       </main>
 
