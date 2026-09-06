@@ -1,0 +1,306 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --bg-app: #07090E;
+  --bg-surface: #0E131F;
+  --bg-surface-elevated: #141B2D;
+  --bg-surface-subtle: #0B0E17;
+  
+  --border-subtle: #1B2438;
+  --border-accent: #2D3D5E;
+  --border-focus: #4F46E5;
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  --accent-blue: #3B82F6;
+  --accent-indigo: #6366F1;
+  --accent-cyan: #06B6D4;
+  --accent-emerald: #10B981;
+  --accent-amber: #F59E0B;
+  --accent-rose: #EF4444;
+
+  --hi-bg: rgba(245, 158, 11, 0.12);
+  --hi-text: #FCD34D;
+  --hi-border: rgba(245, 158, 11, 0.35);
+
+  --en-bg: rgba(59, 130, 246, 0.12);
+  --en-text: #93C5FD;
+  --en-border: rgba(59, 130, 246, 0.35);
+
+  --mix-bg: rgba(168, 85, 247, 0.14);
+  --mix-text: #D8B4FE;
+  --mix-border: rgba(168, 85, 247, 0.4);
+
+  --entity-bg: rgba(16, 185, 129, 0.16);
+  --entity-text: #6EE7B7;
+  --entity-border: rgba(16, 185, 129, 0.5);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-surface-subtle);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-accent);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Base Utility Classes */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--border-accent);
+}
+
+.card-elevated {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Language Segments */
+.segment-hi {
+  background: var(--hi-bg);
+  color: var(--hi-text);
+  border: 1px solid var(--hi-border);
+}
+
+.segment-en {
+  background: var(--en-bg);
+  color: var(--en-text);
+  border: 1px solid var(--en-border);
+}
+
+.segment-mixed {
+  background: var(--mix-bg);
+  color: var(--mix-text);
+  border: 1px solid var(--mix-border);
+}
+
+.segment-entity {
+  background: var(--entity-bg);
+  color: var(--entity-text);
+  border: 1px solid var(--entity-border);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+  font-weight: 700;
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.75;
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+    box-shadow: 0 0 45px rgba(99, 102, 241, 0.8), 0 0 20px rgba(6, 182, 212, 0.5);
+  }
+}
+
+@keyframes listeningWave {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 50px rgba(16, 185, 129, 0.7);
+  }
+}
+
+@keyframes speakingPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: scale(1.07);
+    box-shadow: 0 0 55px rgba(59, 130, 246, 0.9), 0 0 25px rgba(168, 85, 247, 0.6);
+  }
+}
+
+@keyframes interruptedJolt {
+  0% { transform: scale(1.05); }
+  25% { transform: scale(0.96) translateX(-3px); }
+  50% { transform: scale(1) translateX(3px); }
+  75% { transform: scale(0.99) translateX(-1px); }
+  100% { transform: scale(1); }
+}
+
+.anim-pulse-glow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+.anim-listening {
+  animation: listeningWave 1.8s infinite ease-in-out;
+}
+
+.anim-speaking {
+  animation: speakingPulse 1.4s infinite ease-in-out;
+}
+
+.anim-interrupted {
+  animation: interruptedJolt 0.35s ease-out;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Mobile Responsive ─────────────────────────────────────────── */
+
+/* Tablet — up to 1024px */
+@media (max-width: 1024px) {
+  .workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .bottom-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Mobile — up to 768px */
+@media (max-width: 768px) {
+  /* Main content padding */
+  main {
+    padding: 12px 12px !important;
+  }
+
+  /* Header nav */
+  .header-nav {
+    display: none !important;
+  }
+  .header-mobile-nav {
+    display: flex !important;
+  }
+
+  /* Workspace cards */
+  .card {
+    border-radius: 12px !important;
+  }
+
+  /* Voice orb shrink */
+  .voice-orb-container {
+    width: 140px !important;
+    height: 140px !important;
+  }
+  .voice-orb-button {
+    width: 95px !important;
+    height: 95px !important;
+  }
+
+  /* Session stats — 2x2 on mobile */
+  .session-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Demo bar — horizontal scroll */
+  .demo-scenario-bar {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .demo-scenario-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text fallback */
+  .text-fallback-row {
+    flex-direction: column !important;
+  }
+
+  /* Evaluation lab table */
+  .eval-table {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Very small — up to 480px */
+@media (max-width: 480px) {
+  main {
+    padding: 8px !important;
+  }
+  .card {
+    border-radius: 10px !important;
+  }
+  /* Footer text wrap */
+  footer span {
+    display: block;
+    line-height: 1.6;
+  }
+}
+
+/* Touch device improvements */
+@media (hover: none) {
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card:hover {
+    border-color: var(--border-subtle) !important;
+  }
+}
