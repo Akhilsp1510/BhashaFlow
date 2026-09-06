@@ -61,9 +61,22 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
+const NOOP = () => {};
+const FALLBACK_TOAST: ToastContextValue = {
+  toasts: [],
+  showToast: NOOP,
+  dismissToast: NOOP,
+  success: NOOP,
+  error: NOOP,
+  warning: NOOP,
+  info: NOOP,
+};
+
 export const useToast = (): ToastContextValue => {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used inside <ToastProvider>');
+  if (!ctx) {
+    return FALLBACK_TOAST;
+  }
   return ctx;
 };
 

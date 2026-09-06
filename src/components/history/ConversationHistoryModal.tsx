@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { History, User, Trash2, Download, Search, CheckCircle2, ChevronRight, X } from 'lucide-react';
+import { History, User, Trash2, Download, Search, ChevronRight, X } from 'lucide-react';
 import {
   getAllSessions,
   deleteSession,
